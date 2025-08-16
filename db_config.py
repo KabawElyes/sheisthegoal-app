@@ -6,7 +6,8 @@ from psycopg2.extras import DictCursor
 
 def connect_db():
     """Connects to the Render Postgres database using the DATABASE_URL."""
-    database_url = os.environ.get('postgresql://sheisthegoal_db_user:tTDeBzVxe0PBU8QLIjFBBFKSbkhdDFo1@dpg-d2fgermr433s73batelg-a/sheisthegoal_db')
+    # This correctly gets the variable named 'DATABASE_URL' from the environment
+    database_url = os.environ.get('DATABASE_URL')
 
     if not database_url:
         raise Exception("CRITICAL: DATABASE_URL environment variable is not set.")
