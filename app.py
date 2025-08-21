@@ -1,10 +1,19 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
+import cloudinary
+import cloudinary.uploader
 from db_config import connect_db
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key = os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
+    secure=True
+)
 # A secret key is required for sessions to work
 app.config['SECRET_KEY'] = 'your_super_secret_key_change_this'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
@@ -133,7 +142,6 @@ def save_to_db(name, email, opinion, media_path, media_type, user_id):
 
 @app.route("/submit-feedback", methods=["POST"])
 def submit_feedback():
-    # If a user is logged in, use their name and ID. Otherwise, use the form's name.
     if 'user_id' in session:
         user_id = session['user_id']
         name = session['user_name']
@@ -143,20 +151,29 @@ def submit_feedback():
 
     email = request.form["visitorEmail"]
     opinion = request.form["visitorOpinion"]
-    file = request.files["visitorMedia"]
-    
+    file = request.files.get("visitorMedia")  # Use .get() for safety
+
     media_path = ""
     media_type = ""
 
+    # Check if a file was uploaded
     if file and file.filename != "":
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        filename = secure_filename(file.filename)
-        media_path = os.path.join('uploads', filename).replace('\\', '/')
-        full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(full_path)
-        media_type = "video" if "video" in file.content_type else "image"
+        try:
+            # Determine the resource type for Cloudinary (image or video)
+            resource_type = "video" if "video" in file.content_type else "image"
+            
+            # Upload the file to Cloudinary
+            upload_result = cloudinary.uploader.upload(file, resource_type=resource_type)
+            
+            # Get the permanent, secure URL from the result
+            media_path = upload_result.get('secure_url')
+            media_type = resource_type
 
-    # Pass the user_id to the save function
+        except Exception as e:
+            flash(f"Error uploading file: {e}")
+            return redirect(url_for('feedback'))
+
+    # Save the feedback (with the new Cloudinary URL) to the database
     save_to_db(name, email, opinion, media_path, media_type, user_id)
     
     flash("شكراً على رأيك، تم إرساله بنجاح!", "success")
