@@ -26,7 +26,7 @@ def register():
         hashed_password = generate_password_hash(password)
 
         db = connect_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor
 
         # Check if user already exists
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -56,7 +56,7 @@ def login():
         password = request.form['password']
 
         db = connect_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
         cursor.close()
@@ -96,7 +96,7 @@ def account_settings():
 
     user_id = session['user_id']
     db = connect_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
 
     if request.method == 'POST':
         # This is for updating the user's data
@@ -167,7 +167,7 @@ def submit_feedback():
 def feedback():
     try:
         db = connect_db()
-        cursor = db.cursor(dictionary=True)
+        cursor = db.cursor()
         cursor.execute("SELECT * FROM feedback ORDER BY submitted_at DESC")
         feedbacks = cursor.fetchall()
         cursor.close()
@@ -208,7 +208,7 @@ def my_appointments():
 
     user_id = session['user_id']
     db = connect_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     cursor.execute("""
         SELECT id, service_name, appointment_date, status 
         FROM appointments 
@@ -228,7 +228,7 @@ def my_feedback():
 
     user_id = session['user_id']
     db = connect_db()
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor()
     cursor.execute("SELECT opinion, media_path, media_type, submitted_at FROM feedback WHERE user_id = %s ORDER BY submitted_at DESC", (user_id,))
     feedbacks = cursor.fetchall()
     cursor.close()
