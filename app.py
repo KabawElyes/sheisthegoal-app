@@ -26,7 +26,7 @@ def register():
         hashed_password = generate_password_hash(password)
 
         db = connect_db()
-        cursor = db.cursor
+        cursor = db.cursor()
 
         # Check if user already exists
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
