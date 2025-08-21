@@ -167,15 +167,15 @@
                     <p>{{ item.opinion }}</p>
 
                     {% if item.media_path %}
-                        {% if item.media_type == 'image' %}
-                        <img src="{{ url_for('static', filename=item.media_path) }}" alt="صورة مرفقة" class="media-preview">
-                        {% elif item.media_type == 'video' %}
-                        <video controls class="media-preview">
-                            <source src="{{ url_for('static', filename=item.media_path) }}" type="video/mp4">
-                            متصفحك لا يدعم تشغيل الفيديو
-                        </video>
-                        {% endif %}
+                    {% if item.media_type == 'image' %}
+                    <img src="{{ item.media_path }}" alt="صورة مرفقة" class="media-preview">
+                    {% elif item.media_type == 'video' %}
+                    <video controls class="media-preview">
+                        <source src="{{ item.media_path }}" type="video/mp4">
+                        متصفحك لا يدعم تشغيل الفيديو
+                    </video>
                     {% endif %}
+                {% endif %}
                     <small>بتاريخ: {{ item.submitted_at.strftime('%Y-%m-%d') }}</small>
                 </div>
                 {% endfor %}
